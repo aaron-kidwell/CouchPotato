@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="CouchPotato.vcxproj" />
+  <Project Path="CouchPotato.vcxproj" Id="77590061-0621-4296-b21e-0c62cabdffed" />
 </Solution>
