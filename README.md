@@ -1,2 +1,2 @@
 # CouchPotato
-Usage: CouchPotato.exe <ip> <port>
+Usage: 'CouchPotato.exe <ip> <port>'
