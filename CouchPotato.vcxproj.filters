@@ -21,7 +21,7 @@
     <ClCompile Include="util.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="efsr_c.c">
+    <ClCompile Include="couch_efsr_c.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <ClInclude Include="util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="efsr_h.h">
+    <ClInclude Include="couch_efsr_h.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -39,7 +39,7 @@
     </MASM>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="efsr.idl">
+    <Midl Include="couch_efsr.idl">
       <Filter>Source Files</Filter>
     </Midl>
   </ItemGroup>

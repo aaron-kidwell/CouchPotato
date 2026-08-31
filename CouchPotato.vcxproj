@@ -145,21 +145,21 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <AdditionalDependencies>rpcrt4.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;Ws2_32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="efsr_c.c">
+    <ClCompile Include="couch_efsr_c.c">
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</BufferSecurityCheck>
     </ClCompile>
     <ClCompile Include="main.c" />
     <ClCompile Include="util.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="efsr_h.h">
+    <ClInclude Include="couch_efsr_h.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="util.h" />
@@ -170,7 +170,7 @@
     </MASM>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="efsr.idl">
+    <Midl Include="couch_efsr.idl">
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/protocol dce</AdditionalOptions>
     </Midl>
   </ItemGroup>

@@ -1,5 +1,21 @@
 
 
+/* this ALWAYS GENERATED file contains the RPC server stubs */
+
+
+ /* File created by MIDL compiler version 8.01.0628 */
+/* at Mon Jan 18 22:14:07 2038
+ */
+/* Compiler settings for couch_efsr.idl:
+    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.01.0628 
+    protocol : dce , ms_ext, c_ext, robust
+    error checks: allocation ref bounds_check enum stub_data 
+    VC __declspec() decoration level: 
+         __declspec(uuid()), __declspec(selectany), __declspec(novtable)
+         DECLSPEC_UUID(), MIDL_INTERFACE()
+*/
+/* @@MIDL_FILE_HEADING(  ) */
+
 #if defined(_M_AMD64)
 
 
@@ -7,13 +23,12 @@
 #pragma warning(push)
 #endif
 
-#pragma warning( disable: 4211 ) 
-#pragma warning( disable: 4232 )  
-#pragma warning( disable: 4024 ) 
+#pragma warning( disable: 4211 )  /* redefine extern to static */
+#pragma warning( disable: 4232 )  /* dllimport identity*/
+#pragma warning( disable: 4024 )  /* array to pointer mapping*/
 
 #include <string.h>
-
-#include "efsr_h.h"
+#include "couch_efsr_h.h"
 
 #define TYPE_FORMAT_STRING_SIZE   23                                
 #define PROC_FORMAT_STRING_SIZE   253                               
@@ -21,23 +36,23 @@
 #define TRANSMIT_AS_TABLE_SIZE    0            
 #define WIRE_MARSHAL_TABLE_SIZE   0            
 
-typedef struct _efsr_MIDL_TYPE_FORMAT_STRING
+typedef struct _couch_efsr_MIDL_TYPE_FORMAT_STRING
     {
     short          Pad;
     unsigned char  Format[ TYPE_FORMAT_STRING_SIZE ];
-    } efsr_MIDL_TYPE_FORMAT_STRING;
+    } couch_efsr_MIDL_TYPE_FORMAT_STRING;
 
-typedef struct _efsr_MIDL_PROC_FORMAT_STRING
+typedef struct _couch_efsr_MIDL_PROC_FORMAT_STRING
     {
     short          Pad;
     unsigned char  Format[ PROC_FORMAT_STRING_SIZE ];
-    } efsr_MIDL_PROC_FORMAT_STRING;
+    } couch_efsr_MIDL_PROC_FORMAT_STRING;
 
-typedef struct _efsr_MIDL_EXPR_FORMAT_STRING
+typedef struct _couch_efsr_MIDL_EXPR_FORMAT_STRING
     {
     long          Pad;
     unsigned char  Format[ EXPR_FORMAT_STRING_SIZE ];
-    } efsr_MIDL_EXPR_FORMAT_STRING;
+    } couch_efsr_MIDL_EXPR_FORMAT_STRING;
 
 
 static const RPC_SYNTAX_IDENTIFIER  _RpcTransferSyntax_2_0 = 
@@ -97,32 +112,31 @@ ObjectType ## _unbind((ObjectType) pObject, ServerHandle);\
 #define XFG_TRAMPOLINE_FPTR_DEPENDENT_SYMBOL(Symbol) Symbol
 #endif
 
-
-extern const efsr_MIDL_TYPE_FORMAT_STRING efsr__MIDL_TypeFormatString;
-extern const efsr_MIDL_PROC_FORMAT_STRING efsr__MIDL_ProcFormatString;
-extern const efsr_MIDL_EXPR_FORMAT_STRING efsr__MIDL_ExprFormatString;
-
-#define GENERIC_BINDING_TABLE_SIZE   0            
-
+extern const couch_efsr_MIDL_TYPE_FORMAT_STRING couch_efsr__MIDL_TypeFormatString;
+extern const couch_efsr_MIDL_PROC_FORMAT_STRING couch_efsr__MIDL_ProcFormatString;
+extern const couch_efsr_MIDL_EXPR_FORMAT_STRING couch_efsr__MIDL_ExprFormatString;
 
 /* Standard interface: efsrpc, ver. 1.0,
    GUID={0xdf1941c5,0xfe89,0x4e79,{0xbf,0x10,0x46,0x36,0x57,0xac,0xf4,0x4d}} */
 
 
+extern const MIDL_SERVER_INFO efsrpc_ServerInfo;
 
-static const RPC_CLIENT_INTERFACE efsrpc___RpcClientInterface =
+extern const RPC_DISPATCH_TABLE efsrpc_v1_0_DispatchTable;
+
+static const RPC_SERVER_INTERFACE efsrpc___RpcServerInterface =
     {
-    sizeof(RPC_CLIENT_INTERFACE),
+    sizeof(RPC_SERVER_INTERFACE),
     {{0xdf1941c5,0xfe89,0x4e79,{0xbf,0x10,0x46,0x36,0x57,0xac,0xf4,0x4d}},{1,0}},
     {{0x8A885D04,0x1CEB,0x11C9,{0x9F,0xE8,0x08,0x00,0x2B,0x10,0x48,0x60}},{2,0}},
+    (RPC_DISPATCH_TABLE*)&efsrpc_v1_0_DispatchTable,
     0,
     0,
     0,
-    0,
-    0,
-    0x00000000
+    &efsrpc_ServerInfo,
+    0x04000000
     };
-RPC_IF_HANDLE efsrpc_v1_0_c_ifspec = (RPC_IF_HANDLE)& efsrpc___RpcClientInterface;
+RPC_IF_HANDLE efsrpc_v1_0_s_ifspec = (RPC_IF_HANDLE)& efsrpc___RpcServerInterface;
 #ifdef __cplusplus
 namespace {
 #endif
@@ -132,114 +146,13 @@ extern const MIDL_STUB_DESC efsrpc_StubDesc;
 }
 #endif
 
-static RPC_BINDING_HANDLE efsrpc__MIDL_AutoBindHandle;
-
-
-long EfsRpcOpenFileRaw( 
-    /* [in] */ handle_t binding_h,
-    /* [out] */ PEXIMPORT_CONTEXT_HANDLE *hContext,
-    /* [string][in] */ wchar_t *FileName,
-    /* [in] */ long Flags)
-{
-
-    CLIENT_CALL_RETURN _RetVal;
-
-    _RetVal = NdrClientCall2(
-                  ( PMIDL_STUB_DESC  )&efsrpc_StubDesc,
-                  (PFORMAT_STRING) &efsr__MIDL_ProcFormatString.Format[0],
-                  binding_h,
-                  hContext,
-                  FileName,
-                  Flags);
-    return ( long  )_RetVal.Simple;
-    
-}
-
-
-void Opnum1NotUsed( 
-    /* [in] */ handle_t IDL_handle)
-{
-
-    NdrClientCall2(
-                  ( PMIDL_STUB_DESC  )&efsrpc_StubDesc,
-                  (PFORMAT_STRING) &efsr__MIDL_ProcFormatString.Format[54],
-                  IDL_handle);
-    
-}
-
-
-void Opnum2NotUsed( 
-    /* [in] */ handle_t IDL_handle)
-{
-
-    NdrClientCall2(
-                  ( PMIDL_STUB_DESC  )&efsrpc_StubDesc,
-                  (PFORMAT_STRING) &efsr__MIDL_ProcFormatString.Format[84],
-                  IDL_handle);
-    
-}
-
-
-void Opnum3NotUsed( 
-    /* [in] */ handle_t IDL_handle)
-{
-
-    NdrClientCall2(
-                  ( PMIDL_STUB_DESC  )&efsrpc_StubDesc,
-                  (PFORMAT_STRING) &efsr__MIDL_ProcFormatString.Format[114],
-                  IDL_handle);
-    
-}
-
-
-void Opnum4NotUsed( 
-    /* [in] */ handle_t IDL_handle)
-{
-
-    NdrClientCall2(
-                  ( PMIDL_STUB_DESC  )&efsrpc_StubDesc,
-                  (PFORMAT_STRING) &efsr__MIDL_ProcFormatString.Format[144],
-                  IDL_handle);
-    
-}
-
-
-void Opnum5NotUsed( 
-    /* [in] */ handle_t IDL_handle)
-{
-
-    NdrClientCall2(
-                  ( PMIDL_STUB_DESC  )&efsrpc_StubDesc,
-                  (PFORMAT_STRING) &efsr__MIDL_ProcFormatString.Format[174],
-                  IDL_handle);
-    
-}
-
-
-long EfsRpcQueryUsersOnFile( 
-    /* [in] */ handle_t binding_h,
-    /* [string][in] */ wchar_t *FileName,
-    /* [out] */ long **pUsers)
-{
-
-    CLIENT_CALL_RETURN _RetVal;
-
-    _RetVal = NdrClientCall2(
-                  ( PMIDL_STUB_DESC  )&efsrpc_StubDesc,
-                  (PFORMAT_STRING) &efsr__MIDL_ProcFormatString.Format[204],
-                  binding_h,
-                  FileName,
-                  pUsers);
-    return ( long  )_RetVal.Simple;
-    
-}
-
+extern const NDR_RUNDOWN RundownRoutines[];
 
 #if !defined(__RPC_WIN64__)
 #error  Invalid build platform for this stub.
 #endif
 
-static const efsr_MIDL_PROC_FORMAT_STRING efsr__MIDL_ProcFormatString =
+static const couch_efsr_MIDL_PROC_FORMAT_STRING couch_efsr__MIDL_ProcFormatString =
     {
         0,
         {
@@ -440,7 +353,7 @@ static const efsr_MIDL_PROC_FORMAT_STRING efsr__MIDL_ProcFormatString =
         }
     };
 
-static const efsr_MIDL_TYPE_FORMAT_STRING efsr__MIDL_TypeFormatString =
+static const couch_efsr_MIDL_TYPE_FORMAT_STRING couch_efsr__MIDL_TypeFormatString =
     {
         0,
         {
@@ -469,6 +382,12 @@ static const efsr_MIDL_TYPE_FORMAT_STRING efsr__MIDL_TypeFormatString =
         }
     };
 
+static const NDR_RUNDOWN RundownRoutines[] = 
+    {
+    PEXIMPORT_CONTEXT_HANDLE_rundown
+    };
+
+
 static const unsigned short efsrpc_FormatStringOffsetTable[] =
     {
     0,
@@ -486,15 +405,15 @@ namespace {
 #endif
 static const MIDL_STUB_DESC efsrpc_StubDesc = 
     {
-    (void *)& efsrpc___RpcClientInterface,
+    (void *)& efsrpc___RpcServerInterface,
     MIDL_user_allocate,
     MIDL_user_free,
-    &efsrpc__MIDL_AutoBindHandle,
+    0,
+    RundownRoutines,
     0,
     0,
     0,
-    0,
-    efsr__MIDL_TypeFormatString.Format,
+    couch_efsr__MIDL_TypeFormatString.Format,
     1, /* -error bounds_check flag */
     0x60001, /* Ndr library version */
     0,
@@ -510,6 +429,45 @@ static const MIDL_STUB_DESC efsrpc_StubDesc =
 #ifdef __cplusplus
 }
 #endif
+
+static const RPC_DISPATCH_FUNCTION efsrpc_table[] =
+    {
+    NdrServerCall2,
+    NdrServerCall2,
+    NdrServerCall2,
+    NdrServerCall2,
+    NdrServerCall2,
+    NdrServerCall2,
+    NdrServerCall2,
+    0
+    };
+static const RPC_DISPATCH_TABLE efsrpc_v1_0_DispatchTable = 
+    {
+    7,
+    (RPC_DISPATCH_FUNCTION*)efsrpc_table
+    };
+
+static const SERVER_ROUTINE efsrpc_ServerRoutineTable[] = 
+    {
+    (SERVER_ROUTINE)EfsRpcOpenFileRaw,
+    (SERVER_ROUTINE)Opnum1NotUsed,
+    (SERVER_ROUTINE)Opnum2NotUsed,
+    (SERVER_ROUTINE)Opnum3NotUsed,
+    (SERVER_ROUTINE)Opnum4NotUsed,
+    (SERVER_ROUTINE)Opnum5NotUsed,
+    (SERVER_ROUTINE)EfsRpcQueryUsersOnFile
+    };
+
+static const MIDL_SERVER_INFO efsrpc_ServerInfo = 
+    {
+    &efsrpc_StubDesc,
+    efsrpc_ServerRoutineTable,
+    couch_efsr__MIDL_ProcFormatString.Format,
+    efsrpc_FormatStringOffsetTable,
+    0,
+    0,
+    0,
+    0};
 #if _MSC_VER >= 1200
 #pragma warning(pop)
 #endif

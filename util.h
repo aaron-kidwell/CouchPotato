@@ -1,5 +1,6 @@
 #pragma once
 #include <Windows.h>
+#include <winternl.h>
 
 BOOL EtwPatch();
 extern DWORD g_ssn;
