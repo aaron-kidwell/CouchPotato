@@ -197,3 +197,50 @@ BOOL AmsiPatch() {
     }
     return 0;
 }
+
+BOOL check_seimpersonate() {
+
+
+    TOKEN_PRIVILEGES* ptp = { 0 };
+    DWORD dwLength = 0;
+
+    GetTokenInformation(
+        GetCurrentProcessToken(),
+        TokenPrivileges,
+        NULL,
+        0,
+        &dwLength
+    );
+
+    ptp = (TOKEN_PRIVILEGES*)HeapAlloc(GetProcessHeap(),
+        HEAP_ZERO_MEMORY, dwLength);
+
+
+    if (GetTokenInformation(
+        GetCurrentProcessToken(),
+        TokenPrivileges,
+        ptp,
+        dwLength,
+        &dwLength
+    ))
+
+    {
+        LUID seimpersonateLuid = { 0 };
+        LookupPrivilegeValueA(NULL, "SeImpersonatePrivilege", &seimpersonateLuid);
+        for (DWORD i = 0; i < ptp->PrivilegeCount; i++) {
+            if (ptp->Privileges[i].Luid.LowPart == seimpersonateLuid.LowPart &&
+                ptp->Privileges[i].Luid.HighPart == seimpersonateLuid.HighPart) {
+                if (ptp->Privileges[i].Attributes & SE_PRIVILEGE_ENABLED || (ptp->Privileges[i].Attributes & SE_PRIVILEGE_ENABLED_BY_DEFAULT)) {
+                    con_printf("[x] SeImpersonatePrivilege\n");
+                    HeapFree(GetProcessHeap(), 0, ptp);
+                    return 1;
+                }
+
+
+            }
+        }
+    }
+    con_printf("[-] ERROR: Missing SeImpersonatePrivilege!\n");
+    HeapFree(GetProcessHeap(), 0, ptp);
+    return 0;
+}

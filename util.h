@@ -10,4 +10,5 @@ DWORD getSSN(char* funcName);
 PVOID getSyscallAddr(char* funcName);
 PVOID manual_procaddress(HMODULE mod_handle, const char* funcName);
 BOOL AmsiPatch();
+BOOL check_seimpersonate();
 
