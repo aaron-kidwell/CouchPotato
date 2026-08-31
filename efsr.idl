@@ -1,0 +1,27 @@
+[
+    uuid(df1941c5-fe89-4e79-bf10-463657acf44d),
+    version(1.0)
+]
+interface efsrpc
+{
+    typedef [context_handle] void* PEXIMPORT_CONTEXT_HANDLE;
+
+    long EfsRpcOpenFileRaw(
+        [in]            handle_t                    binding_h,
+        [out]           PEXIMPORT_CONTEXT_HANDLE* hContext,
+        [in, string]    wchar_t* FileName,
+        [in]            long                        Flags
+    );
+
+    void Opnum1NotUsed([in] handle_t IDL_handle);
+    void Opnum2NotUsed([in] handle_t IDL_handle);
+    void Opnum3NotUsed([in] handle_t IDL_handle);
+    void Opnum4NotUsed([in] handle_t IDL_handle);
+    void Opnum5NotUsed([in] handle_t IDL_handle);
+
+    long EfsRpcQueryUsersOnFile(
+        [in]            handle_t                    binding_h,
+        [in, string]    wchar_t* FileName,
+        [out]           long** pUsers
+    );
+}

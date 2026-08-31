@@ -1,7 +1,6 @@
 #pragma once
 #include <Windows.h>
 
-void con_printf(const char* fmt, ...);
 BOOL EtwPatch();
 extern DWORD g_ssn;
 extern PVOID g_syscall;
