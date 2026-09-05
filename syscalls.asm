@@ -20,4 +20,11 @@ iNtDuplicateToken PROC
     jmp qword ptr [g_syscall]
 iNtDuplicateToken ENDP
 
+iNtWriteVirtualMemory PROC
+    mov r10, rcx
+    mov eax, g_ssn
+    jmp qword ptr [g_syscall]
+iNtWriteVirtualMemory ENDP
+
+
 end

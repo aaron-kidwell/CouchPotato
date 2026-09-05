@@ -9,6 +9,7 @@ extern PVOID g_syscall;
 NTSTATUS iNtProtectVirtualMemory(HANDLE, PVOID*, PSIZE_T, ULONG, PULONG);
 NTSTATUS iNtOpenThreadToken(HANDLE, ACCESS_MASK, BOOLEAN, PHANDLE);
 NTSTATUS iNtDuplicateToken(HANDLE, ACCESS_MASK, POBJECT_ATTRIBUTES, BOOLEAN, TOKEN_TYPE, PHANDLE);
+NTSTATUS iNtWriteVirtualMemory(HANDLE, PVOID, PVOID, SIZE_T, PSIZE_T);
 
 DWORD getSSN(char* funcName);
 PVOID getSyscallAddr(char* funcName);

