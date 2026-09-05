@@ -38,9 +38,4 @@
       <Filter>Source Files</Filter>
     </MASM>
   </ItemGroup>
-  <ItemGroup>
-    <Midl Include="couch_efsr.idl">
-      <Filter>Source Files</Filter>
-    </Midl>
-  </ItemGroup>
 </Project>

